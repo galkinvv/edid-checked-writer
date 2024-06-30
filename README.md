@@ -1,8 +1,9 @@
-## edid-rw: A utility to read and write a display EDID value
+## edid-checked-writer: A utility to read and write a display EDID value
 
-_Sorry, but I do not support this project anymore. I wrote this utility
-for my own one-off personal use many years ago but have no means to test
-and support changes nowadays. Feel free to fork and improve it._
+This is a fork of Mark Blakeney's https://github.com/bulletmark/edid-rw updated
+to perform verification after writing EDID.
+
+The binary name itself kept to be `./edid-rw` for commands compatitbility.
 
 ### Overview
 
@@ -20,11 +21,11 @@ EDID.
 
 ### Installation
 
-Requires python3 smbus module, and edid-decode utility.
+Requires python3 smbus module, and edid-decode, i2cdetect utilities.
 
 Install these prerequisites on Debian/Ubuntu:
 
-    sudo apt-get install python3-smbus edid-decode
+    sudo apt-get install python3-smbus edid-decode i2c-tools
 
 Or, install these prerequisites on Arch:
 
@@ -32,7 +33,7 @@ Or, install these prerequisites on Arch:
 
 Get this source code:
 
-    git clone https://github.com/bulletmark/edid-rw
+    git clone https://github.com/galkinvv/edid-checked-writer
     cd edid-rw
 
 This utility should run using Python version 3.2+. It does not work with
@@ -66,9 +67,6 @@ write!*
     vim -b edid.bin # Then use xxd within vim, see ":h xxd" in vim
     sudo ./edid-rw -w 0 <edid.bin
 
-### Author
-
-Mark Blakeney, <mailto:mark.blakeney@bullet-systems.net>.
 
 ### License
 
