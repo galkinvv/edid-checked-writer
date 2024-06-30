@@ -13,6 +13,8 @@ import os
 import sys
 import array
 import argparse
+import binascii
+import datetime
 import subprocess
 import time
 from smbus import SMBus
@@ -49,6 +51,25 @@ class SMBDEV:
     def read(self, n):
         'Read a byte from given SMB device'
         return self.smb.read_byte_data(EDID_ADDR, n)
+
+    def read_entire_edid(self):
+        'Read entire edid from given SMB device'
+        # Read EDID from device
+        edid = [self.read(i) for i in range(EDID_HDR)]
+        edid_len = getlen(edid)
+        edid += [self.read(i) for i in range(EDID_HDR, edid_len)]
+
+        # Read extensions from device (if any)
+        edid += [self.read(i) for i in
+                range(edid_len, edid_len + edid_len * edid[-2])]
+        return edid
+
+    def write_entire_edid(self, edid, sleeps_between_writes):
+        'Writes entire edid to given SMB device'
+        # Write EDID to device
+        for i, val in enumerate(edid):
+            self.write(i, val)
+            time.sleep(sleeps_between_writes)
 
     def write(self, n, val):
         'Write a byte to given SMB device'
@@ -116,19 +137,51 @@ def main():
                     sys.exit('ERROR: %s checksum 0x%02x is BAD, should be '
                             '0x%02x.' % (blkname(b), actsum, calsum))
 
-        # Write EDID to device
-        for i, val in enumerate(edid):
-            dev.write(i, val)
-            time.sleep(args.sleep)
-    else:
-        # Read EDID from device
-        edid = [dev.read(i) for i in range(EDID_HDR)]
-        edid_len = getlen(edid)
-        edid += [dev.read(i) for i in range(EDID_HDR, edid_len)]
+        print("Provided file is valid EDID, checking original EDID in a EEPROM...")
+        orig_edid = dev.read_entire_edid()
 
-        # Read extensions from device (if any)
-        edid += [dev.read(i) for i in
-                range(edid_len, edid_len + edid_len * edid[-2])]
+        if edid == orig_edid:
+            print('OK: Device already contains identical EDID, nothing to do.')
+            return
+
+        verified_edid = None
+        print("Writing new EDID to EEPROM...")
+        try:
+            dev.write_entire_edid(edid, args.sleep)
+
+        finally:
+            # wait before verification to ensure that EEPROM completes all its inner workings
+            time.sleep(2)
+
+            verified_edid = dev.read_entire_edid()
+
+            if verified_edid == edid:
+                print('OK: New EDID written and verified')
+            elif verified_edid == orig_edid:
+                sys.exit('ERROR: Failed writing new EDID, maybe device is write-protected.\n'
+                    'Nothing changed, existing device EDID kept unmodified')
+            else:
+                orig_edid_bytes = bytes(orig_edid)
+                sys.stderr.write('CRITICAL: EDID writing failed, EEPROM contents damaged!\n')
+                sys.stderr.write('Here is a hexdump of original edid, you may want to save it for recovering:\n')
+                sys.stderr.write(binascii.hexlify(orig_edid_bytes, '\n', 16).decode())
+                sys.stderr.write('\nTrying to recover original EDID...\n')
+                dev.write_entire_edid(orig_edid, max(args.sleep, 0.05))
+
+                time.sleep(2)
+
+                if dev.read_entire_edid() == orig_edid:
+                    sys.exit('Original EDID recovered')
+                else:
+                    sys.stderr.write('CRITICAL: Recovering original EDID failed too, EEPROM contents damaged!\n')
+                    backup_fname = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%S-orig-EDID.bin')
+                    with open(backup_fname, 'wb') as original_backup:
+                        original_backup.write(orig_edid_bytes)
+                    sys.stderr.write('backup of original EDID saved to:\n')
+                    sys.exit(backup_fname)
+
+    else:
+        edid = dev.read_entire_edid()
 
         # Write EDID to stdout
         os.write(sys.stdout.fileno(), array.array('B', edid).tobytes())
