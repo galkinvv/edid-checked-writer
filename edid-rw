@@ -96,6 +96,13 @@ def main():
     if subprocess.call(('modprobe', 'i2c-dev')) != 0:
         sys.exit('ERROR: Can not load i2c-dev. Must use sudo or be root.')
 
+    if len(sys.argv) == 1:
+        print('Listing available I2C buses via `i2cdetect -l`:')
+        subprocess.call('i2cdetect -l', shell=True)
+        print('You have to carefully select correct bus')
+        print('and pass the number X from the i2c-X bus name as command line "i2c_bus_index" argument')
+        print('')
+
     # Process command line options
     opt = argparse.ArgumentParser(description=__doc__.strip(),
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
