@@ -68,7 +68,7 @@ i2c-12  i2c             AMDGPU DM aux hw bus 2                  I2C adapter
 i2c-13  smbus           SMBus I801 adapter at f040              SMBus adapter
 i2c-14  i2c             NVIDIA i2c adapter 1 at 1:00.0          I2C adapter
 i2c-15  i2c             NVIDIA i2c adapter 2 at 1:00.0          I2C adapter
-i2c-16  i2c             <b>NVIDIA i2c adapter 5 at 1:00.0          I2C adapter</b> <i># HDMI of NVIDIA RTX3080</i>
+i2c-16  i2c             <b>NVIDIA i2c adapter 5 at 1:00.0          I2C adapter</b> <i># HDMI of NVIDIA RTX3060-3090</i>
 i2c-17  i2c             NVIDIA i2c adapter 6 at 1:00.0          I2C adapter
 i2c-18  i2c             NVIDIA i2c adapter 7 at 1:00.0          I2C adapter
 i2c-19  i2c             NVIDIA i2c adapter 8 at 1:00.0          I2C adapter
@@ -110,6 +110,8 @@ write!*
 
 If you are unsure in EDID editing, you may try replacing your EDID with variant
 from another monitor - there is a great collection at https://github.com/linuxhw/EDID
+Note that if external files are in text format, like the link above - they should be converted to binary 256-byte form before writing them to EEPROM.
+Typically, this is done by running reversed-hex-dumping on a part of a text file containing the hex representation.
 
 ### License
 
