@@ -1,6 +1,6 @@
 ## edid-checked-writer: A utility to read and write a display EDID value
 
-This is a fork of Mark Blakeney's https://github.com/bulletmark/edid-rw updated
+This is a fork of Mark Blakeney's [edid-rw](https://github.com/bulletmark/edid-rw) updated
 to perform verification after writing EDID.
 
 The binary name itself kept being `./edid-rw` for commands compatibility.
