@@ -112,6 +112,24 @@ Those EDIDs are in text format and need to be converted to binary before writing
     Writing new EDID to EEPROM...
     OK: New EDID written and verified
 
+Unfortunately, many displays has write-protection on EEPROM chips.
+In this case the program will report an error
+
+    Writing new EDID to EEPROM...
+    ERROR: Failed writing new EDID, maybe device is write-protected.
+    Nothing changed, existing device EDID kept unmodified
+
+Typically, such write protection can't be removed programmatically.
+However, there is quite simple non-intrusive hardware workaround:
+plug simple device named  "pass-through EDID emulator" between the signal source (GPU)
+and monitor cable, corresponding to used HDMI/DVI/VGA plug,
+which effectively "replaces" monitor's EEPROM with emulator's EEPROM.
+Then any wanted EDID can be written into emulator (most of them has no write protection).
+
+Speaking specifically about HDMI there was success writing report with
+cheapest pass-through in metal case with "Source" and "Sink" labels.
+It contains 24C02-series 2Kbit serial EEPROM IC with WriteProtect pin pulled to GND.
+
 ##### Advanced: using hex editor to make custom EDID modifications
 Below is a basic example of reading-modifying-writing EDID for display attached to i2c-9 bus:
 use `!Gxxd [-r]` within vim to read, edit, and write binary
