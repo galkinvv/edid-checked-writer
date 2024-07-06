@@ -28,22 +28,22 @@ Requires:
 
 Install these prerequisites on Debian/Ubuntu:
 
-    $ sudo apt-get install python3-smbus edid-decode i2c-tools
+    sudo apt-get install python3-smbus edid-decode i2c-tools
 
 Or, install these prerequisites on Arch:
 
-    $ sudo yay -S i2c-tools edid-decode-git
+    sudo yay -S i2c-tools edid-decode-git
 
 Get this source code:
 
-    $ curl -L https://github.com/galkinvv/edid-checked-writer/archive/master.tar.gz | tar xvz
-    $ cd edid-checked-writer-master
+    curl -L https://github.com/galkinvv/edid-checked-writer/archive/master.tar.gz | tar xvz
+    cd edid-checked-writer-master
 
 ### Usage
 
 Run without parameters to list available i2c buses and see usage and optional arguments:
 
-    $ sudo ./edid-rw
+    sudo ./edid-rw
 
 All HDMI/DVI/VGA(D-SUB) outputs of AMD/Intel/NVIDIA chips support EDID operations.
 DisplayPort lacks EDID, so it is not supported.
@@ -83,40 +83,56 @@ So the wanted i2c-X bus is often found by trial-and-error way with trying to rea
 
 The names teamplates typically corresponding to HDMI ports are marked as bold in the above output.
 
+##### Just viewing EDID
 Fetch and decode display attached to i2c-0 EDID data:
 
-    $ sudo ./edid-rw 0 | edid-decode
+    sudo ./edid-rw 0 | edid-decode
 
-Fetch and decode display attached to i2c-16 EDID data:
+##### Replacing with another EDID available as a binary file
 
-    $ sudo ./edid-rw 16 | edid-decode
+Getting exact waned EDID for some monitor can be quite hard, fortunately there is a [huge collection of EDIDs by linuxhw project](https://github.com/linuxhw/EDID).
+It has a [monitors model index in a separate file](https://raw.githubusercontent.com/linuxhw/EDID/master/DigitalDisplay.md) that can be used for selecting EDIDs by resolution, size and vendor.
 
-Below is basic example of reading-modifying-writing EDID for disaply attached to i2c-9 bus:
-use `!Gxxd [-r]` within vim to read, edit, and write binary
-file. See `:h xxd` within vim help. You should set the checksum (last)
-byte correctly although edit-rw will calculate and set the checksum
-itself if you include the `-f (--fix)` switch. edid-rw will always
-validate the checksum and will not write an invalid EDID:
+Those EDIDs are in text format and need to be converted to binary before writing. This can be done with grep & xxd as suggested by linuxhw:
 
-*WARNING - Be sure to triple check the EDID bus you are about to
-write!*
+    curl https://raw.githubusercontent.com/linuxhw/EDID/master/Digital\
+    /Samsung/SAM0E0C/38CD24A55A35 | grep -E '^([a-f0-9]{32}|[a-f0-9 ]{47})$' | xxd -r -p > new-edid.bin
 
-    $ sudo ./edid-rw 9 >edid.bin
-    $ vim -b edid.bin # Then use xxd within vim, see ":h xxd" in vim
-    $ sudo ./edid-rw -w 9 <edid.bin # ~10seconds write+verify stage
+1.Backup a EDID data of a display attached to i2c-16 and decode it to make sure that a correct monitor is attached to a selected bus
+
+    sudo ./edid-rw 16 >original-edid.bin && edid-decode original-edid.bin
+
+2.Write new EDID to the EEPROM (~10 seconds write+verify stage)
+
+*WARNING - Be sure to triple check the EDID bus you are about to write!*
+
+    sudo ./edid-rw -w 16 <new-edid.bin
+    
     Provided file is valid EDID, checking original EDID in a EEPROM...
     Writing new EDID to EEPROM...
     OK: New EDID written and verified
 
-If you are unsure in EDID editing, you may try replacing your EDID with variant
-from another monitor - there is a great collection at https://github.com/linuxhw/EDID
-Note that if external files are in text format, like the link above - they should be converted to binary 256-byte form before writing them to EEPROM.
-Typically, this is done by running reversed-hex-dumping on a part of a text file containing the hex representation.
+##### Advanced: using hex editor to make custom EDID modifications
+Below is a basic example of reading-modifying-writing EDID for display attached to i2c-9 bus:
+use `!Gxxd [-r]` within vim to read, edit, and write binary
+file. See `:h xxd` within vim help. You should set the checksum (last)
+byte correctly, although edit-rw will calculate and set the checksum
+itself if you include the `-f (--fix)` switch. edid-rw will always
+validate the checksum and will not write an invalid EDID:
+
+*WARNING - Be sure to triple check the EDID bus you are about to write!*
+
+    sudo ./edid-rw 9 >original-edid.bin && cp original-edid.bin ediatble-edid.bin
+    vim -b ediatble-edid.bin # Then use xxd within vim, see ":h xxd" in vim
+    sudo ./edid-rw -w 9 <ediatble-edid.bin
+    
+    Provided file is valid EDID, checking original EDID in a EEPROM...
+    Writing new EDID to EEPROM...
+    OK: New EDID written and verified
 
 ### License
 
-Copyright (C) 2012 Mark Blakeney. This program is distributed under the
-terms of the GNU General Public License.
+This program is distributed under the terms of the GNU General Public License.
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
