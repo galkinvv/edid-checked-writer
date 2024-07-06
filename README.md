@@ -127,7 +127,7 @@ which effectively "replaces" monitor's EEPROM with emulator's EEPROM.
 Then any wanted EDID can be written into emulator (most of them has no write protection).
 
 <image src="https://raw.githubusercontent.com/galkinvv/edid-checked-writer/doc/source-sink.png" align="right"/>
-Speaking specifically about HDMI there was "success writing" report with
+Speaking specifically about HDMI there was "success EEPROM writing" report with
 cheapest "HDMI pass-through EDID emulator" in metal case with "Source" and "Sink" labels.
 It is based on 24C02-series 2Kbit serial EEPROM with WriteProtect pin pulled to GND via resistor.
 Its pass-through TDMS traces works fine up to 2560x1440@60 bitrate,
