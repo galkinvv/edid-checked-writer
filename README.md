@@ -100,7 +100,7 @@ Those EDIDs are in text format and need to be converted to binary before writing
 
 1.Backup a EDID data of a display attached to i2c-16 and decode it to make sure that a correct monitor is attached to a selected bus
 
-    sudo ./edid-rw 16 >original-edid.bin && edid-decode original-edid.bin
+    sudo ./edid-rw 16 >>original-edid.bin && edid-decode original-edid.bin
 
 2.Write new EDID to the EEPROM (~10 seconds write+verify stage)
 
@@ -127,7 +127,7 @@ which effectively "replaces" monitor's EEPROM with emulator's EEPROM.
 Then any wanted EDID can be written into emulator (most of them has no write protection).
 
 Speaking specifically about HDMI there was success writing report with
-cheapest pass-through in metal case with "Source" and "Sink" labels.
+cheapest "HDMI pass-through  EDID emulator" in metal case with "Source" and "Sink" labels.
 It contains 24C02-series 2Kbit serial EEPROM IC with WriteProtect pin pulled to GND.
 
 ##### Advanced: using hex editor to make custom EDID modifications
@@ -140,7 +140,7 @@ validate the checksum and will not write an invalid EDID:
 
 *WARNING - Be sure to triple check the EDID bus you are about to write!*
 
-    sudo ./edid-rw 9 >original-edid.bin && cp original-edid.bin ediatble-edid.bin
+    sudo ./edid-rw 9 >>original-edid.bin && cp original-edid.bin ediatble-edid.bin
     vim -b ediatble-edid.bin # Then use xxd within vim, see ":h xxd" in vim
     sudo ./edid-rw -w 9 <ediatble-edid.bin
     
