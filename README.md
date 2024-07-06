@@ -121,14 +121,20 @@ In this case the program will report an error
 
 Typically, such write protection can't be removed programmatically.
 However, there is quite simple non-intrusive hardware workaround:
-plug simple device named  "pass-through EDID emulator" between the signal source (GPU)
+plug device named  "pass-through EDID emulator" between the signal source (GPU)
 and monitor cable, corresponding to used HDMI/DVI/VGA plug,
 which effectively "replaces" monitor's EEPROM with emulator's EEPROM.
 Then any wanted EDID can be written into emulator (most of them has no write protection).
 
-Speaking specifically about HDMI there was success writing report with
-cheapest "HDMI pass-through  EDID emulator" in metal case with "Source" and "Sink" labels.
-It contains 24C02-series 2Kbit serial EEPROM IC with WriteProtect pin pulled to GND.
+<image src="https://raw.githubusercontent.com/galkinvv/edid-checked-writer/doc/source-sink.png" align="right"/>
+Speaking specifically about HDMI there was "success writing" report with
+cheapest "HDMI pass-through EDID emulator" in metal case with "Source" and "Sink" labels.
+It is based on 24C02-series 2Kbit serial EEPROM with WriteProtect pin pulled to GND via resistor.
+Its pass-through TDMS traces works fine up to 2560x1440@60 bitrate,
+but failed on higher bitrates for some reason,
+maybe because those traces inside emulator have different lengths.
+So, for 4k@60 bitrates, the emulator need not only have writable EEPROM,
+but also pass-through traces compatible with high bandwidth.
 
 ##### Advanced: using hex editor to make custom EDID modifications
 Below is a basic example of reading-modifying-writing EDID for display attached to i2c-9 bus:
